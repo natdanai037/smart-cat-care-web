@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://gujusmzpdqasvkaozpou.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkXVCJ9..."; // Key ของคุณ
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1anVzbXpwZHFhc3ZrYW96cG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjU5MTMsImV4cCI6MjEwOTAwMTkxM30.Jgu5Uba4CuA5HEqSyRwBizNcsamG5GESI5K0tLQFKQE";
 
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
