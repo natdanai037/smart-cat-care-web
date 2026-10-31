@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Cat Care Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐱 Smart Cat Care Control Center</h1>
+            <p class="status-badge" id="system-status">System: Offline</p>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- กล้อง Live Stream -->
+            <section class="card video-card">
+                <h2>📹 Live Video Stream</h2>
+                <div class="video-container">
+                    <img id="camera-stream" src="" alt="กรุณากรอก IP กล้อง ESP32-CAM" />
+                </div>
+                <div class="cam-input-group">
+                    <input type="text" id="cam-ip" placeholder="เช่น 172.20.10.2" value="172.20.10.2">
+                    <button onclick="updateCameraIP()">เชื่อมต่อกล้อง</button>
+                </div>
+            </section>
+
+            <!-- แผงควบคุมเซนเซอร์ -->
+            <section class="card status-card">
+                <h2>📊 สถานะปัจจุบัน</h2>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <span class="icon">🍖</span>
+                        <div>
+                            <p class="label">อาหารคงเหลือ</p>
+                            <h3 id="food-val">-- g</h3>
+                        </div>
+                    </div>
+                    <div class="metric-box">
+                        <span class="icon">💧</span>
+                        <div>
+                            <p class="label">น้ำคงเหลือ</p>
+                            <h3 id="water-val">-- ml</h3>
+                        </div>
+                    </div>
+                    <div class="metric-box">
+                        <span class="icon">🌡️</span>
+                        <div>
+                            <p class="label">อุณหภูมิ</p>
+                            <h3 id="temp-val">-- °C</h3>
+                        </div>
+                    </div>
+                    <div class="metric-box">
+                        <span class="icon">💧</span>
+                        <div>
+                            <p class="label">ความชื้น</p>
+                            <h3 id="hum-val">-- %RH</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-actions">
+                    <button id="btn-food" class="btn btn-food" onclick="sendCommand('FOOD')">🍖 สั่งจ่ายอาหาร</button>
+                    <button id="btn-water" class="btn btn-water" onclick="sendCommand('WATER')">💧 สั่งจ่ายน้ำ</button>
+                </div>
+            </section>
+
+            <!-- ตารางประวัติการทำงาน -->
+            <section class="card logs-card">
+                <h2>📜 ประวัติการบันทึกล่าสุด</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>เวลา</th>
+                                <th>อาหาร (g)</th>
+                                <th>น้ำ (ml)</th>
+                                <th>อุณหภูมิ (°C)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            <tr><td colspan="4" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
