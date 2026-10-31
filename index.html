@@ -3,85 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Cat Care Dashboard</title>
+    <title>Smart Cat Care Control Center</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🐱 Smart Cat Care Control Center</h1>
-            <p class="status-badge" id="system-status">System: Offline</p>
+    <!-- Toast Notification (แทนคำสั่ง alert) -->
+    <div id="toast" class="toast"></div>
+
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="brand">
+                <span class="logo">🐱</span>
+                <div>
+                    <h1>Smart Cat Care</h1>
+                    <p class="subtitle">ระบบดูแลน้องแมวอัจฉริยะ</p>
+                </div>
+            </div>
+            <div class="status-pill" id="system-status">
+                <span class="status-dot"></span>
+                <span id="status-text">กำลังเชื่อมต่อ...</span>
+            </div>
         </header>
 
         <main class="dashboard-grid">
-            <!-- กล้อง Live Stream -->
+            <!-- Left Column: Camera Stream -->
             <section class="card video-card">
-                <h2>📹 Live Video Stream</h2>
-                <div class="video-container">
-                    <img id="camera-stream" src="" alt="กรุณากรอก IP กล้อง ESP32-CAM" />
+                <div class="card-header">
+                    <h2>📹 กล้องวงจรปิดสตรีมสด</h2>
                 </div>
-                <div class="cam-input-group">
+                <div class="video-wrapper">
+                    <img id="camera-stream" src="" alt="กรุณากรอก IP ESP32-CAM แล้วกดเชื่อมต่อ" />
+                </div>
+                <div class="cam-control">
                     <input type="text" id="cam-ip" placeholder="เช่น 172.20.10.2" value="172.20.10.2">
-                    <button onclick="updateCameraIP()">เชื่อมต่อกล้อง</button>
+                    <button class="btn btn-secondary" onclick="updateCameraIP()">เชื่อมต่อกล้อง</button>
                 </div>
             </section>
 
-            <!-- แผงควบคุมเซนเซอร์ -->
-            <section class="card status-card">
-                <h2>📊 สถานะปัจจุบัน</h2>
+            <!-- Right Column: Status & Controls -->
+            <section class="card control-card">
+                <div class="card-header">
+                    <h2>📊 สถานะ & การควบคุม</h2>
+                </div>
+                
+                <!-- Metrics Grid -->
                 <div class="metrics-grid">
-                    <div class="metric-box">
-                        <span class="icon">🍖</span>
-                        <div>
-                            <p class="label">อาหารคงเหลือ</p>
+                    <div class="metric-box food">
+                        <span class="metric-icon">🍖</span>
+                        <div class="metric-data">
+                            <span class="label">อาหารคงเหลือ</span>
                             <h3 id="food-val">-- g</h3>
                         </div>
                     </div>
-                    <div class="metric-box">
-                        <span class="icon">💧</span>
-                        <div>
-                            <p class="label">น้ำคงเหลือ</p>
+
+                    <div class="metric-box water">
+                        <span class="metric-icon">💧</span>
+                        <div class="metric-data">
+                            <span class="label">น้ำคงเหลือ</span>
                             <h3 id="water-val">-- ml</h3>
                         </div>
                     </div>
-                    <div class="metric-box">
-                        <span class="icon">🌡️</span>
-                        <div>
-                            <p class="label">อุณหภูมิ</p>
+
+                    <div class="metric-box temp">
+                        <span class="metric-icon">🌡️</span>
+                        <div class="metric-data">
+                            <span class="label">อุณหภูมิห้อง</span>
                             <h3 id="temp-val">-- °C</h3>
                         </div>
                     </div>
-                    <div class="metric-box">
-                        <span class="icon">💧</span>
-                        <div>
-                            <p class="label">ความชื้น</p>
-                            <h3 id="hum-val">-- %RH</h3>
+
+                    <div class="metric-box hum">
+                        <span class="metric-icon">💧</span>
+                        <div class="metric-data">
+                            <span class="label">ความชื้นสัมพัทธ์</span>
+                            <h3 id="hum-val">-- %</h3>
                         </div>
                     </div>
                 </div>
 
-                <div class="control-actions">
-                    <button id="btn-food" class="btn btn-food" onclick="sendCommand('FOOD')">🍖 สั่งจ่ายอาหาร</button>
-                    <button id="btn-water" class="btn btn-water" onclick="sendCommand('WATER')">💧 สั่งจ่ายน้ำ</button>
+                <!-- Feed Actions -->
+                <div class="action-section">
+                    <div class="action-row">
+                        <button id="btn-food" class="btn btn-food" onclick="sendCommand('FOOD')">🍖 สั่งจ่ายอาหาร (6g)</button>
+                        <button id="btn-water" class="btn btn-water" onclick="sendCommand('WATER')">💧 สั่งเติมน้ำ (300g)</button>
+                    </div>
+
+                    <!-- Fan Control Switch -->
+                    <div class="fan-control-box">
+                        <div class="fan-info">
+                            <span class="fan-icon">🌀</span>
+                            <div>
+                                <strong>พัดลมระบายอากาศ</strong>
+                                <small id="fan-mode-text">อัตโนมัติ (เปิดเมื่อ > 30°C)</small>
+                            </div>
+                        </div>
+                        <div class="fan-btn-group">
+                            <button class="btn-fan-opt" id="fan-auto-btn" onclick="sendCommand('FAN_AUTO')">Auto</button>
+                            <button class="btn-fan-opt" id="fan-on-btn" onclick="sendCommand('FAN_ON')">เปิด</button>
+                            <button class="btn-fan-opt" id="fan-off-btn" onclick="sendCommand('FAN_OFF')">ปิด</button>
+                        </div>
+                    </div>
+
+                    <!-- Tare / Reset Buttons -->
+                    <div class="tare-group">
+                        <button class="btn btn-outline" onclick="sendCommand('TARE_FOOD')">⚖️ เซ็ตศูนย์ถาดอาหาร</button>
+                        <button class="btn btn-outline" onclick="sendCommand('TARE_WATER')">⚖️ เซ็ตศูนย์ถาดน้ำ</button>
+                    </div>
                 </div>
             </section>
 
-            <!-- ตารางประวัติการทำงาน -->
+            <!-- Bottom Section: Logs Table -->
             <section class="card logs-card">
-                <h2>📜 ประวัติการบันทึกล่าสุด</h2>
-                <div class="table-wrapper">
+                <div class="card-header">
+                    <h2>📜 ประวัติการบันทึกข้อมูล</h2>
+                </div>
+                <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>เวลา</th>
-                                <th>อาหาร (g)</th>
-                                <th>น้ำ (ml)</th>
+                                <th>เวลาบันทึก</th>
+                                <th>อาหารคงเหลือ (g)</th>
+                                <th>น้ำคงเหลือ (g/ml)</th>
                                 <th>อุณหภูมิ (°C)</th>
+                                <th>ความชื้น (%RH)</th>
                             </tr>
                         </thead>
                         <tbody id="log-table-body">
-                            <tr><td colspan="4" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>
+                            <tr><td colspan="5" style="text-align:center;">กำลังดึงข้อมูล...</td></tr>
                         </tbody>
                     </table>
                 </div>
