@@ -1,20 +1,15 @@
-// ตั้งค่า Supabase Credentials
 const SUPABASE_URL = "https://gujusmzpdqasvkaozpou.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1anVzbXpwZHFhc3ZrYW96cG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjU5MTMsImV4cCI6MjEwOTAwMTkxM30.Jgu5Uba4CuA5HEqSyRwBizNcsamG5GESI5K0tLQFKQE";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkXVCJ9..."; // Key ของคุณ
 
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// แสดงการแจ้งเตือนแบบ Toast (แทน alert)
 function showToast(message) {
     const toast = document.getElementById('toast');
     toast.innerText = message;
     toast.classList.add('show');
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
 }
 
-// อัปเดต IP กล้อง
 function updateCameraIP() {
     const ip = document.getElementById('cam-ip').value;
     if(ip) {
@@ -23,7 +18,6 @@ function updateCameraIP() {
     }
 }
 
-// ส่งคำสั่งไปยังตาราง commands บน Supabase
 async function sendCommand(type) {
     let typeName = "";
     if (type === 'FOOD') typeName = "จ่ายอาหาร";
@@ -36,37 +30,41 @@ async function sendCommand(type) {
 
     showToast(`ส่งคำสั่ง: ${typeName} เรียบร้อยแล้ว`);
 
-    const { error } = await _supabase
+    await _supabase
         .from('commands')
         .insert([{ command_type: type, status: 'PENDING' }]);
-
-    if (error) {
-        showToast("เกิดข้อผิดพลาด: " + error.message);
-    }
 }
 
-// ดึงข้อมูลเซนเซอร์ล่าสุด
-async function fetchLatestSensorData() {
+// ⚡ 1. ดึงสถานะสด (Real-time ทุก 2 วินาที) จากตาราง live_status
+async function fetchLiveStatus() {
+    const { data, error } = await _supabase
+        .from('live_status')
+        .select('*')
+        .eq('id', 1)
+        .single();
+
+    if (error || !data) return;
+
+    document.getElementById('food-val').innerText = `${data.food_weight.toFixed(1)} g`;
+    document.getElementById('water-val').innerText = `${data.water_weight.toFixed(1)} ml`;
+    document.getElementById('temp-val').innerText = `${data.temperature.toFixed(1)} °C`;
+    document.getElementById('hum-val').innerText = `${data.humidity.toFixed(1)} %`;
+
+    const statusPill = document.getElementById('system-status');
+    statusPill.classList.add('online');
+    document.getElementById('status-text').innerText = "Online";
+}
+
+// 📜 2. ดึงตารางประวัติ (ทุก 10 วินาที) จากตาราง sensor_logs
+async function fetchSensorLogs() {
     const { data, error } = await _supabase
         .from('sensor_logs')
         .select('*')
         .order('id', { ascending: false })
         .limit(10);
 
-    if (error || !data || data.length === 0) return;
+    if (error || !data) return;
 
-    const latest = data[0];
-    document.getElementById('food-val').innerText = `${latest.food_weight.toFixed(1)} g`;
-    document.getElementById('water-val').innerText = `${latest.water_weight.toFixed(1)} ml`;
-    document.getElementById('temp-val').innerText = `${latest.temperature.toFixed(1)} °C`;
-    document.getElementById('hum-val').innerText = `${latest.humidity.toFixed(1)} %`;
-
-    // อัปเดต สถานะ Online
-    const statusPill = document.getElementById('system-status');
-    statusPill.classList.add('online');
-    document.getElementById('status-text').innerText = "Online";
-
-    // อัปเดต ตารางประวัติ
     const tbody = document.getElementById('log-table-body');
     tbody.innerHTML = data.map(row => `
         <tr>
@@ -79,7 +77,10 @@ async function fetchLatestSensorData() {
     `).join('');
 }
 
-// ดึงข้อมูลทุกๆ 3 วินาที
-setInterval(fetchLatestSensorData, 3000);
-fetchLatestSensorData();
+// ตั้งเวลาการดึงข้อมูล
+setInterval(fetchLiveStatus, 2000);   // สถานะสดบนการ์ด = อัปเดตทุก 2 วินาที
+setInterval(fetchSensorLogs, 10000);  // ตารางประวัติด้านล่าง = อัปเดตทุก 10 วินาที
+
+fetchLiveStatus();
+fetchSensorLogs();
 updateCameraIP();
