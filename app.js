@@ -12,9 +12,38 @@ function showToast(message) {
 
 function updateCameraIP() {
     const ip = document.getElementById('cam-ip').value;
-    if(ip) {
+    if (ip) {
         document.getElementById('camera-stream').src = `http://${ip}:81/stream`;
         showToast("เชื่อมต่อ IP กล้องสำเร็จ");
+    }
+}
+
+// 🌀 ฟังก์ชันอัปเดตสถานะปุ่มและข้อความพัดลม + ส่งคำสั่ง
+async function updateFanUI(mode) {
+    // 1. ส่งคำสั่งไปยัง Supabase
+    await sendCommand(mode);
+
+    // 2. ดึง element ปุ่มและข้อความบอกสถานะ
+    const autoBtn = document.getElementById('fan-auto-btn');
+    const onBtn = document.getElementById('fan-on-btn');
+    const offBtn = document.getElementById('fan-off-btn');
+    const fanModeText = document.getElementById('fan-mode-text');
+
+    // 3. เคลียร์ class active ออกจากทุกปุ่มก่อน
+    if (autoBtn) autoBtn.classList.remove('active');
+    if (onBtn) onBtn.classList.remove('active');
+    if (offBtn) offBtn.classList.remove('active');
+
+    // 4. เพิ่ม class active และอัปเดตข้อความตามโหมดที่เลือก
+    if (mode === 'FAN_AUTO') {
+        if (autoBtn) autoBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "อัตโนมัติ (เปิดเมื่อ > 30°C)";
+    } else if (mode === 'FAN_ON') {
+        if (onBtn) onBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "เปิดอยู่ตลอดเวลา";
+    } else if (mode === 'FAN_OFF') {
+        if (offBtn) offBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "ปิดการทำงานแล้ว";
     }
 }
 
@@ -50,9 +79,37 @@ async function fetchLiveStatus() {
     document.getElementById('temp-val').innerText = `${data.temperature.toFixed(1)} °C`;
     document.getElementById('hum-val').innerText = `${data.humidity.toFixed(1)} %`;
 
+    // หากในฐานข้อมูลมีฟิลด์ fan_mode ให้ซิงค์สถานะปุ่มตามจริงอัตโนมัติ
+    if (data.fan_mode) {
+        setFanUIState(data.fan_mode);
+    }
+
     const statusPill = document.getElementById('system-status');
     statusPill.classList.add('online');
     document.getElementById('status-text').innerText = "Online";
+}
+
+// ฟังก์ชันช่วยซิงค์สถานะปุ่มพัดลมจาก Real-time DB (ถ้ามี)
+function setFanUIState(mode) {
+    const autoBtn = document.getElementById('fan-auto-btn');
+    const onBtn = document.getElementById('fan-on-btn');
+    const offBtn = document.getElementById('fan-off-btn');
+    const fanModeText = document.getElementById('fan-mode-text');
+
+    if (autoBtn) autoBtn.classList.remove('active');
+    if (onBtn) onBtn.classList.remove('active');
+    if (offBtn) offBtn.classList.remove('active');
+
+    if (mode === 'FAN_AUTO' || mode === 'AUTO') {
+        if (autoBtn) autoBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "อัตโนมัติ (เปิดเมื่อ > 30°C)";
+    } else if (mode === 'FAN_ON' || mode === 'ON') {
+        if (onBtn) onBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "เปิดอยู่ตลอดเวลา";
+    } else if (mode === 'FAN_OFF' || mode === 'OFF') {
+        if (offBtn) offBtn.classList.add('active');
+        if (fanModeText) fanModeText.innerText = "ปิดการทำงานแล้ว";
+    }
 }
 
 // 📜 2. ดึงตารางประวัติ (ทุก 10 วินาที) จากตาราง sensor_logs

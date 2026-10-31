@@ -101,9 +101,9 @@
                             </div>
                         </div>
                         <div class="fan-btn-group">
-                            <button class="btn-fan-opt" id="fan-auto-btn" onclick="sendCommand('FAN_AUTO')">Auto</button>
-                            <button class="btn-fan-opt" id="fan-on-btn" onclick="sendCommand('FAN_ON')">เปิด</button>
-                            <button class="btn-fan-opt" id="fan-off-btn" onclick="sendCommand('FAN_OFF')">ปิด</button>
+                            <button class="btn-fan-opt btn-auto active" id="fan-auto-btn" onclick="updateFanUI('FAN_AUTO')">Auto</button>
+                            <button class="btn-fan-opt btn-on" id="fan-on-btn" onclick="updateFanUI('FAN_ON')">เปิด</button>
+                            <button class="btn-fan-opt btn-off" id="fan-off-btn" onclick="updateFanUI('FAN_OFF')">ปิด</button>
                         </div>
                     </div>
 

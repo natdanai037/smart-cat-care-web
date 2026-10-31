@@ -40,6 +40,7 @@ body {
     padding: 16px 24px;
     border-radius: 16px;
     border: 1px solid var(--card-border);
+    backdrop-filter: blur(8px);
 }
 
 .brand {
@@ -68,9 +69,13 @@ body {
     height: 10px;
     border-radius: 50%;
     background: var(--danger);
+    box-shadow: 0 0 8px var(--danger);
 }
 
-.status-pill.online .status-dot { background: var(--success); }
+.status-pill.online .status-dot { 
+    background: var(--success); 
+    box-shadow: 0 0 8px var(--success);
+}
 
 /* Dashboard Grid Layout */
 .dashboard-grid {
@@ -85,6 +90,7 @@ body {
     border: 1px solid var(--card-border);
     padding: 20px;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.2s ease;
 }
 
 .card-header {
@@ -130,6 +136,12 @@ body {
     padding: 10px 14px;
     color: white;
     font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.cam-control input:focus {
+    border-color: var(--primary);
 }
 
 /* Metrics Grid */
@@ -148,6 +160,11 @@ body {
     border: 1px solid var(--card-border);
     padding: 14px;
     border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.metric-box:hover {
+    transform: translateY(-2px);
 }
 
 .metric-icon { font-size: 1.8rem; }
@@ -209,26 +226,50 @@ body {
 
 .fan-btn-group {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     background: #1e293b;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 10px;
+    border: 1px solid var(--card-border);
 }
 
 .btn-fan-opt {
     background: transparent;
     border: none;
     color: var(--text-muted);
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border-radius: 7px;
     cursor: pointer;
     font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.25 ease;
 }
 
-.btn-fan-opt.active {
+.btn-fan-opt:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* สถานะ active ของปุ่มพัดลมแต่ละประเภท */
+.btn-fan-opt.btn-auto.active {
     background: var(--primary);
     color: #0f172a;
     font-weight: 600;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+}
+
+.btn-fan-opt.btn-on.active {
+    background: var(--success);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-fan-opt.btn-off.active {
+    background: var(--danger);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
 }
 
 .tare-group {
@@ -243,7 +284,7 @@ table { width: 100%; border-collapse: collapse; margin-top: 8px; }
 th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--card-border); font-size: 0.9rem; }
 th { color: var(--text-muted); font-weight: 400; }
 
-/* Toast Notification (แจ้งเตือนแบบไม่บดบัง) */
+/* Toast Notification */
 .toast {
     position: fixed;
     bottom: 24px;
