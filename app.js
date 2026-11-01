@@ -72,21 +72,34 @@ async function fetchLiveStatus() {
         .eq('id', 1)
         .single();
 
-    if (error || !data) return;
+    const statusPill = document.getElementById('system-status');
+    const statusText = document.getElementById('status-text');
 
-    document.getElementById('food-val').innerText = `${data.food_weight.toFixed(1)} g`;
-    document.getElementById('water-val').innerText = `${data.water_weight.toFixed(1)} ml`;
-    document.getElementById('temp-val').innerText = `${data.temperature.toFixed(1)} °C`;
-    document.getElementById('hum-val').innerText = `${data.humidity.toFixed(1)} %`;
-
-    // หากในฐานข้อมูลมีฟิลด์ fan_mode ให้ซิงค์สถานะปุ่มตามจริงอัตโนมัติ
-    if (data.fan_mode) {
-        setFanUIState(data.fan_mode);
+    if (error || !data) {
+        statusPill.classList.remove('online');
+        statusText.innerText = "Offline";
+        return;
     }
 
-    const statusPill = document.getElementById('system-status');
-    statusPill.classList.add('online');
-    document.getElementById('status-text').innerText = "Online";
+    // คำนวณความต่างของเวลาอัปเดตล่าสุดกับเวลาปัจจุบัน (วินาที)
+    const lastUpdate = new Date(data.updated_at).getTime();
+    const now = new Date().getTime();
+    const diffSeconds = (now - lastUpdate) / 1000;
+
+    // ถ้า ESP32 ไม่ได้ยิงข้อมูลมาเกิน 8 วินาที (เช่น ถอดปลั๊ก/เน็ตหลุด) ให้ขึ้น Offline
+    if (diffSeconds > 8) {
+        statusPill.classList.remove('online');
+        statusText.innerText = "Offline";
+    } else {
+        statusPill.classList.add('online');
+        statusText.innerText = "Online";
+        
+        // อัปเดตตัวเลขบนการ์ดเฉพาะเมื่อออนไลน์อยู่
+        document.getElementById('food-val').innerText = `${data.food_weight.toFixed(1)} g`;
+        document.getElementById('water-val').innerText = `${data.water_weight.toFixed(1)} ml`;
+        document.getElementById('temp-val').innerText = `${data.temperature.toFixed(1)} °C`;
+        document.getElementById('hum-val').innerText = `${data.humidity.toFixed(1)} %`;
+    }
 }
 
 // ฟังก์ชันช่วยซิงค์สถานะปุ่มพัดลมจาก Real-time DB (ถ้ามี)
